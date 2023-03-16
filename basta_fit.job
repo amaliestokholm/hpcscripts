@@ -39,7 +39,6 @@ INPUTGRID="$SCRATCHHOME/grids/BaSTI_iso2018.hdf5"
 
 # Make dir with SLUR_JOB_ID and TIME/DATE
 OUTPUTHOME=$PROJECTHOME/"case"$CASE"_j"$SLURM_JOB_ID
-echo $OUTPUTHOME
 mkdir $OUTPUTHOME
 
 # Any additional files (frequencies, ratios)?

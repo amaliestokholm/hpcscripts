@@ -1,76 +1,56 @@
 #!/bin/bash
 
-#SBATCH --job-name=basta-fit-16cyga
-#SBATCH --output=output_fit.out
-#SBATCH --error=output_fit.err
+#SBATCH --job-name=basta_run
+#SBATCH --output=slurm.out
+#SBATCH --error=slurm.err
 #SBATCH --time=02:00:00
 #SBATCH --mem=2000
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --constraint=blade,ib
+#SBATCH --constraint=blade
 #SBATCH --mail-user=amalie.stokholm@unibo.it
 #SBATCH --mail-type=ALL
 
-# mem is memory per node in MB
-# ----------------------------------------
-# REMEMBER TO UPDATE THE SETTINGS BELOW!!
-# ----------------------------------------
-# Where are the main directories of the cluster?
-PERSONALHOME="/home/PERSONALE/amalie.stokholm/"
-SCRATCHHOME="/scratch/extra/andrea.miglio/amalie.stokholm"
-# This is the 'root' of the BASTA dir.
-PROJECTHOME=$PERSONALHOME/BASTA/examples
+echo "========= Job started  at `date` on `hostname -s` =========="
+echo
+echo "Job id       : $SLURM_JOB_ID"
+echo
 
-# What is the name of your BASTA venv?
+# Settings
+PROJECTNAME="equinox_mh"
+CASE="01"
+XMLFILE=$PROJECTNAME"_BASTA_20230312_case"$CASE".xml"
+
+PERSONALHOME="/home/PERSONALE/amalie.stokholm"
+WORKHOME="/home/work/astro/amalie.stokholm"
+PROJECTHOME=$WORKHOME/$PROJECTNAME
+
 VENVNAME="venv"
-
-# Any options required for BASTA?
-# OPTIONS="--experimental"
 OPTIONS=""
+# OPTIONS="--experimental"
 
 # The name of the XML input file
 # --> Make sure it matches the gridname, outputdir, etc. below
-XMLFILE=$PROJECTHOME/xmlinput/input_freqs.xml
+XML=$PROJECTHOME/$XMLFILE
 
 # I/O settings
-# --> Must match the content of the XML file!!!
-# --> Remember that everything is copied to the same directory on the computation node
-#     and therefore only the name of the grid should be present in the XML!!
-# --> The output directory will be created on the node and then copied back
-INPUTGRID=$PERSONALHOME/BASTA/grids/Garstec_16CygA.hdf5
-# INPUTGRID="$SCRATCHHOME/grids/BaSTI_iso2018.hdf5"
+# INPUTGRID=$PERSONALHOME/BASTA/grids/Garstec_16CygA.hdf5
+INPUTGRID="$SCRATCHHOME/grids/BaSTI_iso2018.hdf5"
 
-SLURMHOME=$SCRATCHHOME/$SLURM_JOB_ID
-OUTPUTDIR=$SCRATCHHOME/output
+# Make dir with SLUR_JOB_ID and TIME/DATE
+OUTPUTHOME=$PROJECTHOME/"case"$CASE"_j"$SLURM_JOB_ID
+echo $OUTPUTHOME
+mkdir $OUTPUTHOME
 
 # Any additional files (frequencies, ratios)?
 # --> # --> Must match the name specification in the XML-file
 # FREQDIR="/home/milkyway/projects/PLATO_MS_HH/data/"
 FREQDIR=$PROJECTHOME/data/
 
-# ----------------------------------------
-# END OF SETTINGS
-# ----------------------------------------
-echo "========= Job started  at `date` on `hostname -s` =========="
-echo
-echo "Job id       : $SLURM_JOB_ID"
-echo
-
-# Copy things to computation node
-mkdir -p $SLURMHOME
-cp $INPUTGRID $SLURMHOME
-cp $XMLFILE $SLURMHOME
-if [ -d "$FREQDIR" ]; then
-    cp -r $FREQDIR $SLURMHOME
-fi
-
-# Activate the BASTA venv (BASTADIR is defined during installation of BASTA)
+# Do the thigns
 source $BASTADIR/$VENVNAME/bin/activate
-
-# Run on the node and return results
-cd $SLURMHOME
-BASTArun $OPTIONS $XMLFILE
-rsync -aq $OUTPUTDIR $SLURM_SUBMIT_DIR/
+cd $PROJECTHOME
+BASTArun $OPTIONS $XML
 
 echo "========= Job finished at `date` =========="
 

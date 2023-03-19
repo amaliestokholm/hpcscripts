@@ -1,0 +1,2 @@
+#!/bin/bash
+sbatch --account=astro --job-name=basta_run --output=slurm_%j.out --error=slurm_%j.err --time=20:00:00 --mem=60000 --nodes=1 --ntasks=1 --cpus-per-task=32 --constraint=blade,ib --partition=b2 "$@"

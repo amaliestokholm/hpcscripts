@@ -1,0 +1,43 @@
+#!/bin/bash
+# It seems that #SBATCH does not work. Run the script with ./sbatchwrapper instead.
+#SBATCH --account=astro
+#SBATCH --job-name=basta_run
+#SBATCH --output=slurm_%j.out
+#SBATCH --error=slurm_%j.err
+#SBATCH --time=01:00:00
+#SBATCH --mem=16000
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=16
+#SBATCH --constraint=blade,ib
+#SBATCH --partition=b2
+
+
+echo "========= Job started  at `date` on `hostname -s` =========="
+echo
+echo "Job id       : ${SLURM_JOB_ID}"
+echo
+
+# Settings
+PROJECTNAME="equinox"
+FITPARAMS="_mh"
+
+SCRATCHHOME="/scratch/extra/andrea.miglio/amalie.stokholm"
+PERSONALHOME="/home/PERSONALE/amalie.stokholm"
+WORKHOME="/home/work/astro/amalie.stokholm"
+
+PROJECTHOME="${WORKHOME}/${PROJECTNAME}"
+XMLDIR="${PROJECTHOME}/xmlinput/${PROJECTNAME}${FITPARAMS}"
+
+VENVNAME="venv"
+OPTIONS=""
+# OPTIONS="--experimental"
+
+# Do the things
+source "${BASTADIR}/${VENVNAME}/bin/activate"
+cd ${PROJECTHOME}
+BASTAmultirun ${OPTIONS} --parallel ${SLURM_CPUS_PER_TASK:-1} "${XMLDIR}/"
+# BASTArun ${OPTIONS} "xmlinput/equinox_mh/equinox_mh_BASTA_20230312_case010.xml"
+
+echo "========= Job finished at `date` =========="
+

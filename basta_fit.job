@@ -21,6 +21,7 @@ PROJECTNAME="equinox_mh"
 CASE="01"
 XMLFILE=$PROJECTNAME"_BASTA_20230312_case"$CASE".xml"
 
+SCRATCHHOME="/scratch/extra/andrea.miglio/amalie.stokholm"
 PERSONALHOME="/home/PERSONALE/amalie.stokholm"
 WORKHOME="/home/work/astro/amalie.stokholm"
 PROJECTHOME=$WORKHOME/$PROJECTNAME

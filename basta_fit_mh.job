@@ -1,17 +1,4 @@
 #!/bin/bash
-# It seems that #SBATCH does not work. Run the script with ./sbatchwrapper instead.
-#SBATCH --account=astro
-#SBATCH --job-name=basta_run
-#SBATCH --output=slurm_%j.out
-#SBATCH --error=slurm_%j.err
-#SBATCH --time=01:00:00
-#SBATCH --mem=16000
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=16
-#SBATCH --constraint=blade,ib
-#SBATCH --partition=b2
-
 
 echo "========= Job started  at `date` on `hostname -s` =========="
 echo
@@ -20,7 +7,7 @@ echo
 
 # Settings
 PROJECTNAME="equinox"
-FITPARAMS="_mh"
+FITPARAMS="_feh"
 
 SCRATCHHOME="/scratch/extra/andrea.miglio/amalie.stokholm"
 PERSONALHOME="/home/PERSONALE/amalie.stokholm"
@@ -36,6 +23,8 @@ OPTIONS=""
 # Do the things
 source "${BASTADIR}/${VENVNAME}/bin/activate"
 cd ${PROJECTHOME}
+echo "Job title: $PROJECTNAME$FITPARAMS"
+scontrol update job "$SLURM_JOB_ID" JobName="$PROJECTNAME$FITPARAMS"
 BASTAmultirun ${OPTIONS} --parallel ${SLURM_CPUS_PER_TASK:-1} "${XMLDIR}/"
 # BASTArun ${OPTIONS} "xmlinput/equinox_mh/equinox_mh_BASTA_20230312_case010.xml"
 

@@ -1,3 +1,4 @@
+import argparse
 import os
 import subprocess
 import h5py
@@ -8,21 +9,37 @@ from astropy.utils.exceptions import AstropyWarning
 
 warnings.filterwarnings("ignore", category=AstropyWarning)
 
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--restart", type=int, required=True)
+parser.add_argument("idstr", nargs="+", choices=[
+     "equinox_mh",
+     "equinox_feh",
+     "equinox_fehalphacorr",
+     "equinox_mh_floor",
+     "equinox_feh_floor",
+     "equinox_fehalphacorr_floor",
+])
+args = parser.parse_args()
+restart = args.restart
+assert restart == 2
+idstrs = args.idstr
+
 ##############################################################################
 # Make xmls
 ##############################################################################
 ###########################################################
 # Control of input
-idstrs = [
-     #"equinox_mh",
-     #"equinox_feh",
-     "equinox_fehalphacorr",
-     #"equinox_mh_floor",
-     # "equinox_feh_floor",
-     "equinox_fehalphacorr_floor",
-]
+# idstrs = [
+#     #"equinox_mh",
+#     #"equinox_feh",
+#     #"equinox_fehalphacorr",
+#     #"equinox_mh_floor",
+#     "equinox_feh_floor",
+#     #"equinox_fehalphacorr_floor",
+# ]
 
-restart = 1
+# restart = 2
 
 for idstr in idstrs:
     if idstr == "equinox_mh":
@@ -110,11 +127,21 @@ for idstr in idstrs:
             donefile = f"./results/{idstr}/done_case{case}_before_{restart}.txt"
             if os.path.exists(donefile):
                 raise Exception("Already exists: %s" % (donefile,))
-            subprocess.check_call(
-                f"grep -hv starid case_{case}/*/results.ascii | cut -d' ' -f1 > done_case{case}_before_{restart}.txt",
-                shell=True,
-                cwd=f"./results/{idstr}",
-            )
+            if restart == 2:
+                # restart 2: rerun those with nans.
+                # in other words, "good" means "not nan"
+                subprocess.check_call(
+                    f"grep -hv -e starid -e nan results/combined_{idstr}_case_{case}.ascii | cut -d' ' -f1 > results/{idstr}/done_case{case}_before_{restart}.txt",
+                    shell=True,
+                )
+            else:
+                # restart 1: rerun those that didn't have an output.
+                # in other words, "good" means "in the file".
+                subprocess.check_call(
+                    f"grep -hv starid case_{case}/*/results.ascii | cut -d' ' -f1 > done_case{case}_before_{restart}.txt",
+                    shell=True,
+                    cwd=f"./results/{idstr}",
+                )
             sz = os.stat(donefile).st_size
             if sz == 0:
                 raise Exception("Done file is empty? %s" % (donefile,))

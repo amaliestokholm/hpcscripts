@@ -1,0 +1,2 @@
+#!/bin/bash
+squeue -o'%.9i %.9P %.18j %.15u %.2t %.8M %.6D %R' -uamalie.stokholm
